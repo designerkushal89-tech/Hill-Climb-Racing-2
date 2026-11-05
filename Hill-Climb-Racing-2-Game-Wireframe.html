@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f0e9">
+  <title>Hill Rivals — Game UI Wireframe</title>
+  <style>
+    :root {
+      --paper: #f3f0e9;
+      --ink: #26251f;
+      --muted: #76736c;
+      --line: #45443d;
+      --soft: #e8e4da;
+      --accent: #c9c1ad;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #d7d4cb;
+      font: 14px/1.35 "Segoe UI", Arial, sans-serif;
+    }
+    button { font: inherit; color: inherit; }
+    .toolbar {
+      position: sticky;
+      z-index: 20;
+      top: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 20px;
+      background: #f7f5ef;
+      border-bottom: 1px solid #bcb8ae;
+      box-shadow: 0 3px 12px #28271d12;
+    }
+    .title { font-size: 15px; font-weight: 850; letter-spacing: .03em; }
+    .subtitle { display: block; color: var(--muted); font-size: 12px; font-weight: 400; }
+    .tools { display: flex; align-items: center; gap: 7px; }
+    .tools button, .tools a {
+      border: 1px solid #8e8b81;
+      border-radius: 8px;
+      padding: 7px 10px;
+      background: #fffefa;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .zoom-label { min-width: 46px; text-align: center; color: var(--muted); font-size: 12px; }
+    .canvas-wrap { overflow: auto; height: calc(100vh - 57px); padding: 28px; }
+    .board {
+      position: relative;
+      width: 1020px;
+      min-height: 2890px;
+      margin: 0 auto;
+      padding: 30px;
+      transform-origin: top left;
+      background-color: #f8f6f0;
+      background-image: radial-gradient(#4b49401b .8px, transparent .8px);
+      background-size: 16px 16px;
+      border: 1px solid #c7c3b9;
+      box-shadow: 0 12px 38px #211f171c;
+    }
+    .board-title { position: absolute; z-index: 2; top: 24px; left: 30px; }
+    .board-title h1 { margin: 0; font-size: 24px; letter-spacing: -.04em; }
+    .board-title p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+    .legend { position: absolute; z-index: 2; top: 27px; right: 24px; display:flex; gap:8px; align-items:center; font-size:11px; color:var(--muted); }
+    .legend i { width:20px; border-top:2px solid var(--line); display:inline-block; }
+    .legend i.branch { border-top-style:dashed; }
+    .group-title {
+      position: absolute;
+      z-index: 2;
+      left: 30px;
+      padding: 4px 9px;
+      border: 1px solid #bcb8ae;
+      background: #f8f6f0;
+      color: #77736b;
+      text-transform: uppercase;
+      letter-spacing: .15em;
+      font-size: 10px;
+      font-weight: 800;
+    }
+    .group-main { top: 91px; }
+    .group-garage { top: 551px; }
+    .group-extras { top: 1011px; }
+    .group-competition { top: 1471px; }
+    .group-create { top: 1931px; }
+    .group-finish { top: 2391px; }
+    .connections {
+      position: absolute;
+      inset: 0;
+      width: 1020px;
+      height: 2890px;
+      pointer-events: none;
+      overflow: visible;
+    }
+    .connections path { fill: none; stroke: #49483f; stroke-width: 2; }
+    .connections path.branch { stroke-dasharray: 6 5; stroke: #777268; }
+    .connections text { fill: #625f56; font: 11px "Segoe UI", Arial, sans-serif; }
+    .screen {
+      position: absolute;
+      z-index: 3;
+      width: 248px;
+      min-height: 390px;
+      padding: 12px;
+      background: #f4f1e9;
+      border: 1.5px solid var(--line);
+      box-shadow: 3px 4px 0 #423f3620;
+      transform: rotate(var(--tilt, 0deg));
+      cursor: pointer;
+      transition: box-shadow .15s, transform .15s;
+    }
+    .screen:hover { z-index: 5; transform: rotate(0) translateY(-4px); box-shadow: 4px 9px 18px #25231a26; }
+    .screen:focus-visible { outline: 3px solid #536a9d; outline-offset: 3px; }
+    .s1,.s2,.s3,.s4,.s5,.s6,.s7,.s8,.s9,.s10,.s11,.s12,.s13,.s14,.s15,.s16,.s17,.s18 { --tilt: 0deg; }
+    .s1 { left: 30px; top: 125px; }
+    .s13 { left: 380px; top: 125px; }
+    .s2 { left: 730px; top: 125px; }
+    .s8 { left: 730px; top: 585px; }
+    .s7 { left: 380px; top: 585px; }
+    .s9 { left: 30px; top: 585px; }
+    .s3 { left: 30px; top: 1045px; }
+    .s4 { left: 380px; top: 1045px; }
+    .s14 { left: 730px; top: 1045px; }
+    .s5 { left: 730px; top: 1505px; }
+    .s6 { left: 380px; top: 1505px; }
+    .s15 { left: 30px; top: 1505px; }
+    .s10 { left: 30px; top: 1965px; }
+    .s16 { left: 380px; top: 1965px; }
+    .s11 { left: 730px; top: 1965px; }
+    .s17 { left: 730px; top: 2425px; }
+    .s18 { left: 380px; top: 2425px; }
+    .s12 { left: 30px; top: 2425px; }
+    .screen-topline { display:flex; align-items:center; justify-content:space-between; padding-bottom:7px; border-bottom:1px solid #98948a; color:#646159; font-size:9px; font-weight:700; letter-spacing:.06em; }
+    .screen-id { color:#45433b; }
+    .phone {
+      position: relative;
+      height: 315px;
+      margin-top: 9px;
+      overflow: hidden;
+      background: #efede6;
+      border: 1.5px solid #4b4942;
+      padding: 10px;
+    }
+    .phone:after { content:""; position:absolute; bottom:4px; left:calc(50% - 24px); width:48px; height:3px; border-radius:4px; background:#77746b; }
+    .status { display:flex; justify-content:space-between; color:#605d55; font-size:8px; margin-bottom:6px; }
+    .wire-title { font-size:12px; font-weight:800; text-align:center; margin:7px 0; }
+    .wire-sub { color:#77736a; font-size:8px; text-align:center; margin:3px 0 8px; }
+    .sketch-btn {
+      display:block;
+      width:100%;
+      margin:5px 0;
+      border:1.4px solid #5b5951;
+      border-radius:3px 5px 4px 3px;
+      padding:6px 5px;
+      background:#f7f5ef;
+      text-align:center;
+      font-size:9px;
+      font-weight:700;
+      box-shadow:1px 1px 0 #4a483f25;
+    }
+    .sketch-btn.primary { background:#dedacf; }
+    .sketch-btn.inline { display:inline-block; width:auto; padding:5px 8px; }
+    .hud { display:flex; justify-content:space-between; gap:3px; }
+    .hud span { flex:1; padding:4px 2px; border:1px solid #6c6960; text-align:center; background:#f8f6f0; font-size:8px; }
+    .scene {
+      position:relative;
+      height:111px;
+      margin:7px 0;
+      overflow:hidden;
+      border:1px solid #59574e;
+      background:linear-gradient(#e7e5dd 0 48%, #c7c4b8 48% 63%, #aaa79b 63%);
+    }
+    .scene:before {
+      content:"";
+      position:absolute;
+      left:-12%; right:-12%; bottom:-33px;
+      height:84px;
+      border-top:2px solid #58564d;
+      border-radius:48% 35% 0 0;
+      transform:rotate(-8deg);
+      background:#c5c2b6;
+      box-shadow:90px -13px 0 -3px #d5d2c8,180px 3px 0 -4px #b1aea2;
+    }
+    .scene span { position:absolute; z-index:1; }
+    .vehicle { left:39%; bottom:27px; font-size:27px; filter:grayscale(1); }
+    .coin { top:38px; left:18%; font-size:12px; }
+    .flag { top:20px; right:17%; font-size:14px; }
+    .hill { top:29px; left:64%; font-size:20px; filter:grayscale(1); }
+    .panel {
+      margin:6px 0;
+      padding:6px;
+      border:1px solid #77746a;
+      background:#f6f4ed;
+      font-size:8px;
+    }
+    .meter { height:7px; border:1px solid #77746a; margin:5px 0 7px; background:#e2dfd5; }
+    .meter b { display:block; height:100%; background:#aaa69b; }
+    .chips { display:flex; justify-content:center; gap:4px; margin:6px 0; }
+    .chip { display:grid; place-items:center; width:31px; height:27px; border:1px solid #77746a; background:#eeece5; font-size:8px; }
+    .track-mini {
+      position:relative;
+      height:112px;
+      margin:8px 0;
+      overflow:hidden;
+      border:1px solid #77746a;
+      background:linear-gradient(#ebe9e2 0 57%,#d1cec3 57%);
+    }
+    .track-mini:after { content:""; position:absolute; left:-10%; right:-10%; bottom:-26px; height:57px; background:#bcb9ad; border-top:2px solid #5e5c54; transform:rotate(-8deg); }
+    .piece { position:absolute; z-index:1; top:45px; font-size:13px; filter:grayscale(1); }
+    .piece.p1 { left:15%; }.piece.p2 { left:43%; top:34px; }.piece.p3 { left:69%; top:51px; }
+    .stars { text-align:center; font-size:22px; letter-spacing:3px; margin:9px 0; color:#55534b; }
+    .callout { margin-top:8px; color:#67645c; font-size:9px; }
+    .callout b { color:#302f2a; }
+    .wire-icons { display:flex; justify-content:space-around; margin:10px 0; color:#605e56; font-size:14px; }
+    .level-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; margin:8px 0; }
+    .level { display:grid; place-items:center; height:43px; border:1px solid #77746a; background:#f8f6f0; font-weight:800; }
+    .level.locked { color:#858177; background:#e8e5dc; }
+    .result-score { font-size:24px; font-weight:900; text-align:center; margin:5px; }
+    .tiny { color:#77736a; font-size:8px; }
+    .modal {
+      position:fixed;
+      z-index:50;
+      inset:0;
+      display:none;
+      place-items:center;
+      padding:18px;
+      background:#171713a8;
+    }
+    .modal.open { display:grid; }
+    .modal-card {
+      width:min(390px, 100%);
+      padding:18px;
+      border:1.5px solid #393830;
+      background:#f5f2ea;
+      box-shadow:0 12px 40px #0005;
+    }
+    .modal-card h2 { margin:0 0 4px; font-size:18px; }
+    .modal-card .phone { width:230px; height:420px; margin:12px auto; }
+    .modal-card .phone > * { transform-origin:top left; }
+    .modal-close { float:right; border:1px solid #77746a; background:#fffefa; padding:4px 9px; cursor:pointer; }
+    .footnote { position:absolute; left:30px; bottom:17px; color:#77736a; font-size:10px; }
+    @media (max-width:700px) {
+      .toolbar { align-items:flex-start; padding:10px 12px; }
+      .title { font-size:13px; }
+      .subtitle { max-width:190px; }
+      .tools { gap:4px; }
+      .tools button, .tools a { padding:6px 8px; font-size:12px; }
+      .canvas-wrap { height:calc(100vh - 63px); padding:12px; }
+    }
+    /* Lo-fi pass: reduce the visual language to rough grayscale blocks and placeholders. */
+    body { background:#dedede; color:#222; }
+    .toolbar { background:#f7f7f7; border-color:#aaa; box-shadow:none; }
+    .board {
+      background-color:#fff;
+      background-image:none;
+      border-color:#aaa;
+      box-shadow:none;
+    }
+    .group-title { background:#fff; color:#555; border-color:#aaa; }
+    .screen {
+      background:#fff;
+      border:1px solid #444;
+      box-shadow:1px 2px 0 #00000012;
+      border-radius:2px 5px 3px 1px;
+    }
+    .s1 { --tilt:-.35deg; }
+    .s3 { --tilt:.3deg; }
+    .s5 { --tilt:.25deg; }
+    .s7 { --tilt:-.3deg; }
+    .s9 { --tilt:.35deg; }
+    .s11 { --tilt:-.25deg; }
+    .s13 { --tilt:.3deg; }
+    .s15 { --tilt:-.35deg; }
+    .s17 { --tilt:.25deg; }
+    .phone {
+      background:#fff;
+      border-color:#555;
+      border-radius:1px 4px 2px 1px;
+      filter:grayscale(1);
+    }
+    .phone:after { height:2px; border-radius:0; background:#777; }
+    .scene {
+      height:118px;
+      background:#f1f1f1;
+      border:1px solid #555;
+      border-radius:0;
+    }
+    .scene:before {
+      inset:0;
+      width:auto;
+      height:auto;
+      border:0;
+      border-radius:0;
+      transform:none;
+      background:
+        linear-gradient(135deg, transparent calc(50% - .7px), #8a8a8a 50%, transparent calc(50% + .7px)),
+        linear-gradient(45deg, transparent calc(50% - .7px), #8a8a8a 50%, transparent calc(50% + .7px));
+      box-shadow:none;
+    }
+    .scene:after {
+      content:"IMAGE / GAMEPLAY";
+      position:absolute;
+      z-index:2;
+      top:5px;
+      left:0;
+      right:0;
+      color:#666;
+      text-align:center;
+      font:8px "Segoe UI", Arial, sans-serif;
+      letter-spacing:.12em;
+    }
+    .scene > span { display:none; }
+    .track-mini {
+      height:118px;
+      background:
+        linear-gradient(135deg, transparent calc(50% - .7px), #8a8a8a 50%, transparent calc(50% + .7px)),
+        linear-gradient(45deg, transparent calc(50% - .7px), #8a8a8a 50%, transparent calc(50% + .7px)),
+        #f1f1f1;
+      border-color:#555;
+      border-radius:0;
+    }
+    .track-mini:after { content:none; }
+    .track-mini .piece { display:none; }
+    .track-mini:before {
+      content:"TRACK / MAP PLACEHOLDER";
+      position:absolute;
+      z-index:2;
+      left:0;
+      right:0;
+      top:5px;
+      color:#666;
+      text-align:center;
+      font-size:8px;
+      letter-spacing:.1em;
+    }
+    .panel {
+      background:#fff;
+      border-color:#777;
+      border-radius:0;
+      box-shadow:none;
+    }
+    .sketch-btn, .chip, .level, .hud span, .meter, .modal-card, .modal-card .phone {
+      border-radius:0;
+      box-shadow:none;
+    }
+    .sketch-btn { background:#fff; border-color:#555; }
+    .sketch-btn.primary { background:#e9e9e9; }
+    .meter { background:#ededed; border-color:#777; }
+    .meter b { background:#929292; }
+    .chip, .level { background:#f5f5f5; border-color:#777; }
+    .stars { color:#555; }
+    .vehicle, .coin, .flag, .hill, .piece { filter:grayscale(1); }
+    .connections path { stroke:#454545; }
+    .connections path.branch { stroke:#777; }
+    .connections text { fill:#555; }
+  </style>
+</head>
+<body>
+  <header class="toolbar">
+    <div class="title">HILL RIVALS — GAME UI WIREFRAME<span class="subtitle">Low-fidelity mobile screen flow · click any screen to inspect</span></div>
+    <div class="tools">
+      <button id="zoomOut" aria-label="Zoom out">−</button>
+      <span class="zoom-label" id="zoomLabel">100%</span>
+      <button id="zoomIn" aria-label="Zoom in">+</button>
+      <button id="fitBoard">Fit board</button>
+      <a href="./Hill-Climb-Racing-2-Prototype.html">Visual prototype ↗</a>
+    </div>
+  </header>
+  <div class="canvas-wrap" id="canvasWrap">
+    <div class="board" id="board">
+      <div class="board-title"><h1>Hill Rivals — 18 Screen Lo‑Fi Game UI</h1><p>Rough block wireframes · placeholder image boxes · mobile portrait flow</p></div>
+      <div class="legend"><i></i> Main flow <i class="branch"></i> Optional route</div>
+      <div class="group-title group-main">01 — Onboarding & garage</div>
+      <div class="group-title group-garage">02 — Vehicle setup</div>
+      <div class="group-title group-extras">03 — Choose a race</div>
+      <div class="group-title group-competition">04 — Race & progress</div>
+      <div class="group-title group-create">05 — Events & creation</div>
+      <div class="group-title group-finish">06 — Publish, rewards & settings</div>
+
+      <svg class="connections" viewBox="0 0 1020 2890" aria-label="Screen navigation arrows">
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#49483f"/></marker>
+          <marker id="arrowBranch" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#777268"/></marker>
+        </defs>
+        <path d="M278 326 L370 326" marker-end="url(#arrow)"/>
+        <path d="M628 326 L720 326" marker-end="url(#arrow)"/>
+        <path d="M854 519 L854 570" marker-end="url(#arrow)"/>
+        <path d="M730 786 L628 786" marker-end="url(#arrow)"/>
+        <path d="M380 786 L278 786" marker-end="url(#arrow)"/>
+        <path d="M154 979 L154 1030" marker-end="url(#arrow)"/>
+        <path d="M278 1246 L370 1246" marker-end="url(#arrow)"/>
+        <path d="M628 1246 L720 1246" marker-end="url(#arrow)"/>
+        <path d="M854 1439 L854 1490" marker-end="url(#arrow)"/>
+        <path d="M730 1706 L628 1706" marker-end="url(#arrow)"/>
+        <path d="M380 1706 L278 1706" marker-end="url(#arrow)"/>
+        <path d="M154 1899 L154 1950" marker-end="url(#arrow)"/>
+        <path d="M278 2166 L370 2166" marker-end="url(#arrow)"/>
+        <path d="M628 2166 L720 2166" marker-end="url(#arrow)"/>
+        <path d="M854 2359 L854 2410" marker-end="url(#arrow)"/>
+        <path d="M730 2626 L628 2626" marker-end="url(#arrow)"/>
+        <path d="M380 2626 L278 2626" marker-end="url(#arrow)"/>
+        <path class="branch" d="M854 1150 C854 1100 600 1100 504 1150" marker-end="url(#arrowBranch)"/>
+        <path class="branch" d="M154 2166 C280 2110 405 2110 504 2166" marker-end="url(#arrowBranch)"/>
+        <path class="branch" d="M504 2166 C630 2110 755 2110 854 2166" marker-end="url(#arrowBranch)"/>
+      </svg>
+
+      <article class="screen s1" tabindex="0" role="button" aria-label="Open Splash and Loading screen">
+        <div class="screen-topline"><span class="screen-id">01</span><span>SPLASH / LOADING</span></div>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span>●●● ▰</span></div>
+          <div class="scene"><span class="hill">⛰</span><span class="vehicle">🚙</span><span class="flag">🏁</span></div>
+          <div class="wire-title">HILL RIVALS</div><div class="wire-sub">OFFROAD RACING</div>
+          <div class="panel">LOADING GAME DATA</div>
+          <div class="meter"><b style="width:72%"></b></div>
+          <div class="wire-sub">Connecting to race service…</div>
+          <div class="sketch-btn primary">CONTINUE</div>
+        </div>
+        <div class="callout"><b>01 · Splash / Loading</b> Logo, progress and connection status.</div>
+      </article>
+
+      <article class="screen s2" tabindex="0" role="button" aria-label="Open Home Garage Hub screen">
+        <div class="screen-topline"><span class="screen-id">03</span><span>HOME / GARAGE HUB</span></div>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span>🪙 2,450 · ⚙</span></div>
+          <div class="wire-title">GARAGE</div>
+          <div class="scene"><span class="coin">●</span><span class="vehicle">🚙</span><span class="hill">⛰</span></div>
+          <div class="panel">HILL CLIMBER <span style="float:right">LV 03</span></div>
+          <div class="sketch-btn primary">RACE</div>
+          <div class="chips"><span class="chip">ADVENTURE</span><span class="chip">CUPS</span><span class="chip">EVENT</span></div>
+          <div class="wire-icons"><span>🚙</span><span>🏆</span><span>👥</span><span>⚙</span></div>
+        </div>
+        <div class="callout"><b>Hub:</b> Mode, vehicle, events and team entry.</div>
+      </article>
+
+      <article class="screen s3" tabindex="0" role="button" aria-label="Open Mode Select screen">
+        <div class="screen-topline"><span class="screen-id">07</span><span>MODE SELECT</span></div>
+        <div class="phone">
+          <div class="status"><span>‹ BACK</span><span>SELECT MODE</span></div>
+          <div class="wire-title">HOW WILL YOU RACE?</div>
+          <div class="panel"><b>🏔 ADVENTURE</b><div class="tiny">Distance · coins · new terrain</div></div>
+          <div class="panel"><b>🏁 CUPS / PVP</b><div class="tiny">Race players · win trophies</div></div>
+          <div class="panel"><b>⚡ LIVE EVENTS</b><div class="tiny">Weekly challenges · rewards</div></div>
+          <div class="panel"><b>✎ TRACK EDITOR</b><div class="tiny">Build and share a track</div></div>
+          <div class="sketch-btn primary">CONTINUE</div>
+        </div>
+        <div class="callout"><b>Decision:</b> Adventure, multiplayer or creator path.</div>
+      </article>
+
+      <article class="screen s4" tabindex="0" role="button" aria-label="Open Map and Cup Select screen">
+        <div class="screen-topline"><span class="screen-id">08</span><span>MAP / CUP SELECT</span></div>
+        <div class="phone">
+          <div class="status"><span>‹ BACK</span><span>CUP 03</span><span>🏆 1280</span></div>
+          <div class="wire-title">GREEN VALLEY</div>
+          <div class="scene"><span class="flag">🏁</span><span class="vehicle">🚙</span><span class="hill">⛰</span><span class="coin">●</span></div>
+          <div class="panel">HILLS · MEDIUM · 4 RACERS</div>
+          <div class="wire-sub">CUP PROGRESS</div>
+          <div class="meter"><b style="width:62%"></b></div>
+          <div class="panel">REWARD: 120 COINS + TROPHIES</div>
+          <div class="sketch-btn">CHANGE VEHICLE</div>
+          <div class="sketch-btn primary">FIND RACE</div>
+        </div>
+        <div class="callout"><b>Entry:</b> Preview route, rewards and vehicle.</div>
+      </article>
+
+      <article class="screen s5" tabindex="0" role="button" aria-label="Open Race HUD screen">
+        <div class="screen-topline"><span class="screen-id">10</span><span>RACE HUD</span></div>
+        <div class="phone">
+          <div class="status"><span>●●●</span><span>GREEN VALLEY</span><span>Ⅱ</span></div>
+          <div class="hud"><span>POS<br><b>2 / 4</b></span><span>DIST<br><b>420 m</b></span><span>COINS<br><b>08</b></span></div>
+          <div class="scene"><span class="coin">●</span><span class="vehicle">🚙</span><span class="flag">🏁</span><span class="hill">⛰</span></div>
+          <div class="panel">RACE PROGRESS ━━━━━━━</div>
+          <div style="height:25px"></div>
+          <div class="hud"><span style="padding:13px">BRAKE ◀</span><span style="padding:13px">GAS ▶</span></div>
+          <div class="wire-sub">Hold controls to drive</div>
+        </div>
+        <div class="callout"><b>Play:</b> Gas / brake · position · distance · pause.</div>
+      </article>
+
+      <article class="screen s6" tabindex="0" role="button" aria-label="Open Race Results screen">
+        <div class="screen-topline"><span class="screen-id">11</span><span>RACE RESULTS</span></div>
+        <div class="phone">
+          <div class="status"><span>RACE COMPLETE</span><span>✕</span></div>
+          <div class="wire-title">PODIUM FINISH</div>
+          <div class="stars">★ ★ ★</div>
+          <div class="result-score">2ND PLACE</div>
+          <div class="panel">TIME <span style="float:right">00:42.61</span></div>
+          <div class="panel">COINS <span style="float:right">+120</span></div>
+          <div class="panel">TROPHIES <span style="float:right">+35</span></div>
+          <div class="sketch-btn">GARAGE / UPGRADE</div>
+          <div class="sketch-btn primary">NEXT RACE</div>
+          <div class="wire-icons"><span>⌂ HOME</span><span>↻ RETRY</span></div>
+        </div>
+        <div class="callout"><b>Reward:</b> Placement, currency and replay actions.</div>
+      </article>
+
+      <article class="screen s7" tabindex="0" role="button" aria-label="Open Vehicle Upgrade screen">
+        <div class="screen-topline"><span class="screen-id">05</span><span>VEHICLE UPGRADE</span></div>
+        <div class="phone">
+          <div class="status"><span>‹ GARAGE</span><span>🪙 2,450</span></div>
+          <div class="scene"><span class="vehicle">🚙</span></div>
+          <div class="wire-title">HILL CLIMBER · LV 03</div>
+          <div class="panel">ENGINE <span style="float:right">LV 3</span><div class="meter"><b style="width:62%"></b></div><div class="sketch-btn inline">UPGRADE · 300</div></div>
+          <div class="panel">TIRES <span style="float:right">LV 2</span><div class="meter"><b style="width:74%"></b></div><div class="sketch-btn inline">UPGRADE · 250</div></div>
+          <div class="panel">SUSPENSION · GRIP</div>
+          <div class="wire-icons"><span>VEHICLES</span><span>UPGRADE</span><span>CUSTOMIZE</span></div>
+        </div>
+        <div class="callout"><b>Loop:</b> Spend earned coins, improve stats, race again.</div>
+      </article>
+
+      <article class="screen s8" tabindex="0" role="button" aria-label="Open Vehicle Select screen">
+        <div class="screen-topline"><span class="screen-id">04</span><span>VEHICLE SELECT</span></div>
+        <div class="phone">
+          <div class="status"><span>‹ GARAGE</span><span>MY VEHICLES</span></div>
+          <div class="scene"><span class="vehicle">🚙</span></div>
+          <div class="wire-title">HILL CLIMBER</div>
+          <div class="wire-sub">LEVEL 03 · OWNED</div>
+          <div class="panel">ENGINE <div class="meter"><b style="width:62%"></b></div>GRIP <div class="meter"><b style="width:74%"></b></div></div>
+          <div class="chips"><span class="chip">🚙</span><span class="chip">🚜</span><span class="chip">🏎</span></div>
+          <div class="sketch-btn">UPGRADE</div>
+          <div class="sketch-btn primary">SELECT VEHICLE</div>
+        </div>
+        <div class="callout"><b>Choice:</b> Browse owned and unlockable vehicles.</div>
+      </article>
+
+      <article class="screen s9" tabindex="0" role="button" aria-label="Open Vehicle Customize screen">
+        <div class="screen-topline"><span class="screen-id">06</span><span>VEHICLE CUSTOMIZE</span></div>
+        <div class="phone">
+          <div class="status"><span>‹ GARAGE</span><span>CUSTOMIZE</span></div>
+          <div class="scene"><span class="vehicle">🚙</span></div>
+          <div class="wire-title">MAKE IT YOURS</div>
+          <div class="panel">PAINT FINISH</div>
+          <div class="chips"><span class="chip">●</span><span class="chip">●</span><span class="chip">●</span><span class="chip">●</span></div>
+          <div class="panel">DECALS · OWNED</div>
+          <div class="panel">ROOF ACCESSORY <span style="float:right">PREVIEW</span></div>
+          <div class="sketch-btn primary">SAVE LOOK</div>
+        </div>
+        <div class="callout"><b>Cosmetic:</b> Paint, skins and appearance items.</div>
+      </article>
+
+      <article class="screen s10" tabindex="0" role="button" aria-label="Open Events and Weekly Challenges screen">
+        <div class="screen-topline"><span class="screen-id">13</span><span>EVENTS / WEEKLY CHALLENGES</span></div>
+        <div class="phone">
+          <div class="status"><span>‹ HOME</span><span>COMPETE</span></div>
+          <div class="wire-title">WEEKLY CHALLENGE</div>
+          <div class="panel"><b>BIG AIR WEEKEND</b><p class="tiny">Land 5 clean jumps</p><div class="meter"><b style="width:40%"></b></div>REWARD: RARE PART</div>
+          <div class="sketch-btn primary">PLAY EVENT</div>
+          <div class="panel"><b>LIVE EVENT</b><p class="tiny">Desert Dash · ends in 2d 14h</p></div>
+          <div class="sketch-btn">EVENT LEADERBOARD</div>
+          <div class="panel">REWARDS · COINS · BLUEPRINTS</div>
+        </div>
+        <div class="callout"><b>13 · Events / Weekly Challenges</b> Limited-time goals and rewards.</div>
+      </article>
+
+      <article class="screen s11" tabindex="0" role="button" aria-label="Open Track Editor screen">
+        <div class="screen-topline"><span class="screen-id">15</span><span>TRACK EDITOR</span></div>
+        <div class="phone">
+          <div class="status"><span>‹ BACK</span><span>MY TRACK</span><span>SAVE</span></div>
+          <div class="wire-title">BUILD A CHALLENGE</div>
+          <div class="track-mini"><span class="piece p1">▲</span><span class="piece p2">●</span><span class="piece p3">◆</span></div>
+          <div class="chips"><span class="chip">HILL</span><span class="chip">RAMP</span><span class="chip">ROCK</span><span class="chip">COIN</span></div>
+          <div class="wire-icons"><span>↶ UNDO</span><span>↻</span><span>DELETE</span></div>
+          <div class="sketch-btn">TEST TRACK</div>
+          <div class="sketch-btn primary">PUBLISH</div>
+        </div>
+        <div class="callout"><b>Create:</b> Place pieces → test drive → publish/share.</div>
+      </article>
+
+      <article class="screen s12" tabindex="0" role="button" aria-label="Open Settings and Support screen">
+        <div class="screen-topline"><span class="screen-id">18</span><span>SETTINGS & SUPPORT</span></div>
+        <div class="phone">
+          <div class="status"><span>‹ HOME</span><span>SETTINGS</span></div>
+          <div class="wire-title">OPTIONS</div>
+          <div class="panel">SOUND <span style="float:right">ON ━━━○</span></div>
+          <div class="panel">MUSIC <span style="float:right">ON ━━○━</span></div>
+          <div class="panel">CONTROL LAYOUT <span style="float:right">EDIT</span></div>
+          <div class="panel">PURCHASES <p class="tiny">Optional · device setting controls</p></div>
+          <div class="panel">HELP · PRIVACY · TERMS</div>
+          <div class="sketch-btn">SUPPORT</div>
+          <div class="wire-icons"><span>✓ SAVE</span><span>× CLOSE</span></div>
+        </div>
+        <div class="callout"><b>Notes:</b> Optional purchases; disclose random-item odds.</div>
+      </article>
+
+      <article class="screen s13" tabindex="0" role="button" aria-label="Open Welcome and Tutorial screen">
+        <div class="screen-topline"><span class="screen-id">02</span><span>WELCOME & TUTORIAL</span></div>
+        <div class="phone">
+          <div class="status"><span>WELCOME, RACER</span><span>SKIP</span></div>
+          <div class="wire-title">LEARN THE CONTROLS</div>
+          <div class="scene"><span class="vehicle">🚙</span><span class="hill">⛰</span></div>
+          <div class="panel"><b>1 · HOLD GAS ▶</b><div class="tiny">Build speed up the slope.</div></div>
+          <div class="panel"><b>2 · USE BRAKE ◀</b><div class="tiny">Control your landing and balance.</div></div>
+          <div class="panel">Collect coins along the route.</div>
+          <div class="sketch-btn primary">START FIRST DRIVE</div>
+        </div>
+        <div class="callout"><b>02 · Welcome & Tutorial</b> Controls and guided first drive.</div>
+      </article>
+
+      <article class="screen s14" tabindex="0" role="button" aria-label="Open Matchmaking and Ready screen">
+        <div class="screen-topline"><span class="screen-id">09</span><span>MATCHMAKING / READY</span></div>
+        <div class="phone">
+          <div class="status"><span>‹ CANCEL</span><span>CUP RACE</span></div>
+          <div class="wire-title">FINDING RACERS</div>
+          <div class="panel" style="text-align:center;padding:15px">◌<br>SEARCHING FOR OPPONENTS…</div>
+          <div class="panel">YOU · HILL CLIMBER <span style="float:right">READY ✓</span></div>
+          <div class="panel">RACER 2 <span style="float:right">READY ✓</span></div>
+          <div class="panel">RACER 3 <span style="float:right">CONNECTING…</span></div>
+          <div class="sketch-btn primary">RACE STARTS IN 3</div>
+        </div>
+        <div class="callout"><b>09 · Matchmaking / Ready</b> Opponents, vehicle check and countdown.</div>
+      </article>
+
+      <article class="screen s15" tabindex="0" role="button" aria-label="Open Trophy Road and Leaderboard screen">
+        <div class="screen-topline"><span class="screen-id">12</span><span>TROPHY ROAD / LEADERBOARD</span></div>
+        <div class="phone">
+          <div class="status"><span>‹ HOME</span><span>SEASON 08</span></div>
+          <div class="wire-title">TROPHY ROAD</div>
+          <div class="panel">YOUR RANK <b style="float:right">GOLD II</b></div>
+          <div class="meter"><b style="width:82%"></b></div>
+          <div class="panel">1,280 / 1,500 TROPHIES</div>
+          <div class="panel">01 · RidgeRunner <span style="float:right">2,940</span></div>
+          <div class="panel">02 · YOU <span style="float:right">1,280</span></div>
+          <div class="panel">03 · MudFox <span style="float:right">1,245</span></div>
+          <div class="sketch-btn primary">VIEW MILESTONE REWARDS</div>
+        </div>
+        <div class="callout"><b>12 · Trophy Road / Leaderboard</b> Rank, milestones and standings.</div>
+      </article>
+
+      <article class="screen s16" tabindex="0" role="button" aria-label="Open Team Hub screen">
+        <div class="screen-topline"><span class="screen-id">14</span><span>TEAM HUB</span></div>
+        <div class="phone">
+          <div class="status"><span>‹ HOME</span><span>TEAM</span></div>
+          <div class="wire-title">HILL HUSTLERS</div>
+          <div class="panel">12 MEMBERS · TEAM SCORE 8,420</div>
+          <div class="panel">TEAM EVENT<div class="tiny">Distance challenge · 2 days left</div><div class="meter"><b style="width:66%"></b></div></div>
+          <div class="panel">LEADER · DustyDriver</div>
+          <div class="panel">YOU · 640 TEAM POINTS</div>
+          <div class="sketch-btn">MEMBERS / INVITE</div>
+          <div class="sketch-btn primary">TEAM LEADERBOARD</div>
+        </div>
+        <div class="callout"><b>14 · Team Hub</b> Members, events and team rankings.</div>
+      </article>
+
+      <article class="screen s17" tabindex="0" role="button" aria-label="Open Track Test and Publish screen">
+        <div class="screen-topline"><span class="screen-id">16</span><span>TRACK TEST / PUBLISH</span></div>
+        <div class="phone">
+          <div class="status"><span>‹ EDIT TRACK</span><span>SAVE</span></div>
+          <div class="wire-title">TEST YOUR TRACK</div>
+          <div class="track-mini"><span class="piece p1">▲</span><span class="piece p2">●</span><span class="piece p3">◆</span></div>
+          <div class="panel">VALIDATION<div class="tiny">✓ Start and finish connected</div><div class="tiny">✓ Vehicle can reach the finish</div></div>
+          <div class="panel">TRACK NAME <b>RIDGE RUN</b></div>
+          <div class="sketch-btn">TEST DRIVE</div>
+          <div class="sketch-btn primary">PUBLISH TRACK</div>
+        </div>
+        <div class="callout"><b>16 · Track Test / Publish</b> Validate, test, name and share.</div>
+      </article>
+
+      <article class="screen s18" tabindex="0" role="button" aria-label="Open Rewards and Store screen">
+        <div class="screen-topline"><span class="screen-id">17</span><span>REWARDS / STORE</span></div>
+        <div class="phone">
+          <div class="status"><span>‹ HOME</span><span>🪙 2,450</span></div>
+          <div class="wire-title">REWARDS</div>
+          <div class="panel">RACE REWARD <b style="float:right">+120 COINS</b></div>
+          <div class="panel">DAILY BONUS<div class="chips"><span class="chip">DAY 1</span><span class="chip">DAY 2</span><span class="chip">DAY 3</span></div></div>
+          <div class="sketch-btn primary">CLAIM REWARD</div>
+          <div class="panel">OPTIONAL STORE</div>
+          <div class="sketch-btn">VIEW OFFERS</div>
+          <div class="tiny">Any random item must show contents and odds before purchase.</div>
+        </div>
+        <div class="callout"><b>17 · Rewards / Store</b> Earned rewards and optional purchases.</div>
+      </article>
+
+      <div class="footnote">Concept wireframe for planning and discussion · Not an official game UI · Tap a screen to enlarge</div>
+    </div>
+  </div>
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-card">
+      <button class="modal-close" id="closeModal" aria-label="Close">Close ×</button>
+      <h2 id="modalTitle">Screen</h2>
+      <div class="tiny">Tap outside or press Escape to close.</div>
+      <div class="phone" id="modalPhone"></div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const board = document.getElementById("board");
+      const wrap = document.getElementById("canvasWrap");
+      const zoomLabel = document.getElementById("zoomLabel");
+      let scale = 1;
+      function setZoom(value) {
+        scale = Math.max(.45, Math.min(1.35, value));
+        board.style.transform = "scale(" + scale + ")";
+        board.style.marginBottom = (2890 * (scale - 1)) + "px";
+        zoomLabel.textContent = Math.round(scale * 100) + "%";
+      }
+      document.getElementById("zoomIn").addEventListener("click", function () { setZoom(scale + .1); });
+      document.getElementById("zoomOut").addEventListener("click", function () { setZoom(scale - .1); });
+      document.getElementById("fitBoard").addEventListener("click", function () {
+        const available = Math.max(.45, (wrap.clientWidth - 56) / 1020);
+        setZoom(Math.min(1, available));
+        wrap.scrollTo({ left: 0, top: 0, behavior: "smooth" });
+      });
+
+      const modal = document.getElementById("modal");
+      const modalTitle = document.getElementById("modalTitle");
+      let modalPhone = document.getElementById("modalPhone");
+      function openScreen(card) {
+        const phone = card.querySelector(".phone");
+        const label = card.querySelector(".screen-topline span:last-child").textContent;
+        modalTitle.textContent = label;
+        modalPhone.replaceChildren();
+        const clone = phone.cloneNode(true);
+        clone.style.height = "390px";
+        modalPhone.replaceWith(clone);
+        clone.id = "modalPhone";
+        modalPhone = clone;
+        modal.classList.add("open");
+        document.getElementById("closeModal").focus();
+      }
+      document.querySelectorAll(".screen").forEach(function (card) {
+        card.addEventListener("click", function () { openScreen(card); });
+        card.addEventListener("keydown", function (event) {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openScreen(card);
+          }
+        });
+      });
+      function closeModal() { modal.classList.remove("open"); }
+      document.getElementById("closeModal").addEventListener("click", closeModal);
+      modal.addEventListener("click", function (event) { if (event.target === modal) closeModal(); });
+      document.addEventListener("keydown", function (event) { if (event.key === "Escape") closeModal(); });
+    }());
+  </script>
+</body>
+</html>

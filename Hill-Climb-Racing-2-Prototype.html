@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#17251c">
+  <title>Hill Rivals — Interactive Game Flow Prototype</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #f7f1df;
+      --muted: #b7c1af;
+      --panel: #26372a;
+      --panel-2: #304632;
+      --line: #506246;
+      --lime: #c8ed69;
+      --orange: #ff9a45;
+      --blue: #77d8ed;
+      --danger: #ff7866;
+      --shadow: 0 16px 40px #10191099;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse at 70% 8%, #53663b77 0, transparent 38%),
+        linear-gradient(165deg, #26352a 0%, #18241c 57%, #111a16 100%);
+      font: 15px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    .shell { max-width: 1180px; margin: auto; padding: 22px clamp(14px, 3vw, 36px) 40px; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:22px; }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .brand-mark { width:42px; height:42px; display:grid; place-items:center; border-radius:14px; color:#1b281b; background:var(--lime); font-size:24px; box-shadow:0 5px 0 #7c9a38; }
+    .brand-name { font-weight:900; letter-spacing:.09em; font-size:14px; }
+    .brand-sub { color:var(--muted); font-size:12px; }
+    .wallet { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    .pill { border:1px solid var(--line); background:#1b2a20cc; border-radius:999px; padding:8px 13px; font-size:13px; color:var(--ink); }
+    .pill strong { color:var(--lime); }
+    .layout { display:grid; grid-template-columns:220px minmax(0,1fr); gap:18px; align-items:start; }
+    aside, main { border:1px solid #71815d55; background:#1b2a21db; border-radius:22px; box-shadow:var(--shadow); }
+    aside { padding:16px 12px; position:sticky; top:14px; }
+    .nav-label { color:#91a18b; text-transform:uppercase; font-weight:800; letter-spacing:.14em; font-size:10px; padding:8px 10px 10px; }
+    .nav-btn { width:100%; display:flex; align-items:center; gap:10px; text-align:left; border:0; border-radius:12px; background:transparent; color:#d5ddcf; padding:10px; margin:2px 0; cursor:pointer; }
+    .nav-btn:hover, .nav-btn.active { color:var(--ink); background:#354a36; }
+    .nav-btn.active { box-shadow:inset 3px 0 var(--lime); }
+    .nav-icon { width:22px; text-align:center; font-size:17px; }
+    main { min-height:690px; overflow:hidden; }
+    .screen { display:none; padding:clamp(18px, 3vw, 34px); animation:fade .18s ease-out; }
+    .screen.active { display:block; }
+    @keyframes fade { from {opacity:.55; transform:translateY(4px)} to {opacity:1; transform:none} }
+    .screen-head { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:23px; }
+    .eyebrow { color:var(--lime); font-size:11px; font-weight:900; letter-spacing:.16em; text-transform:uppercase; }
+    h1 { margin:5px 0 0; font-size:clamp(25px, 4vw, 38px); line-height:1.08; letter-spacing:-.04em; }
+    h2 { margin:0 0 8px; font-size:20px; }
+    p { color:var(--muted); margin:7px 0 0; }
+    .row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .row.between { justify-content:space-between; }
+    .btn { border:1px solid transparent; background:var(--lime); color:#172216; font-weight:900; border-radius:12px; padding:11px 16px; cursor:pointer; transition:.15s transform,.15s filter; }
+    .btn:hover { transform:translateY(-2px); filter:brightness(1.05); }
+    .btn.secondary { background:#394e39; color:var(--ink); border-color:#687c55; }
+    .btn.orange { background:var(--orange); color:#25180e; }
+    .btn.ghost { background:transparent; color:var(--muted); border-color:var(--line); }
+    .btn.small { padding:8px 11px; font-size:13px; }
+    .hero {
+      min-height:270px; position:relative; overflow:hidden; border:1px solid #83936866; border-radius:20px;
+      background:linear-gradient(180deg,#8ad5d5 0%,#d1d99b 56%,#9fb75d 100%);
+      color:#17261b; padding:22px; display:flex; flex-direction:column; justify-content:space-between;
+    }
+    .hero:before { content:""; position:absolute; width:600px; height:240px; left:15%; bottom:-147px; border-radius:50%; transform:rotate(-9deg); background:#597640; box-shadow:180px -25px 0 7px #75934b, 390px 12px 0 8px #48633c; }
+    .hero:after { content:""; position:absolute; width:580px; height:120px; left:29%; bottom:-93px; border-radius:50%; transform:rotate(11deg); background:#374b33; box-shadow:220px -9px 0 #354833; }
+    .hero > * { position:relative; z-index:1; }
+    .hero-kicker { font-size:11px; letter-spacing:.17em; text-transform:uppercase; font-weight:900; color:#344932; }
+    .hero-title { max-width:420px; font-size:clamp(32px, 6vw, 58px); line-height:.97; font-weight:1000; letter-spacing:-.06em; text-shadow:0 2px #ffffff66; }
+    .car-art { position:absolute; z-index:2; right:12%; bottom:48px; font-size:74px; transform:scaleX(-1) rotate(-6deg); filter:drop-shadow(0 10px 5px #1c281a55); }
+    .hero-cta { align-self:flex-start; }
+    .grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:17px; }
+    .card { border:1px solid #5b704e; background:linear-gradient(145deg,#304531,#253629); padding:16px; border-radius:16px; min-width:0; }
+    .card-icon { font-size:24px; margin-bottom:9px; }
+    .card p { font-size:13px; }
+    .card .btn { margin-top:13px; }
+    .garage { display:grid; grid-template-columns:minmax(0,1fr) 250px; gap:15px; }
+    .vehicle-stage { position:relative; min-height:310px; display:grid; place-items:center; border-radius:18px; overflow:hidden; background:linear-gradient(#87c8ca 0 48%,#b5c976 48% 65%,#68824a 65%); }
+    .vehicle-stage:after { content:""; height:75px; background:#394c34; position:absolute; left:-10%; right:-10%; bottom:-38px; border-radius:50%; transform:rotate(-4deg); }
+    .big-car { z-index:1; font-size:110px; transform:scaleX(-1) rotate(-8deg); filter:drop-shadow(0 14px 5px #1b2a2480); }
+    .vehicle-name { position:absolute; z-index:2; top:14px; left:16px; color:#263727; font-weight:900; letter-spacing:.08em; }
+    .stat { margin:14px 0; }
+    .stat-top { display:flex; justify-content:space-between; font-size:13px; }
+    .bar { height:8px; background:#17251c; border-radius:9px; margin-top:6px; overflow:hidden; }
+    .bar span { display:block; height:100%; background:var(--lime); border-radius:9px; }
+    .option-list { display:grid; gap:10px; }
+    .option { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px; border:1px solid var(--line); border-radius:14px; background:#26372a; }
+    .option small { display:block; color:var(--muted); margin-top:3px; }
+    .track-preview { min-height:230px; border-radius:18px; position:relative; overflow:hidden; background:linear-gradient(#92d9e3,#d5ddaa 68%,#708f4e 68%); margin-bottom:16px; }
+    .track-preview:before { content:""; position:absolute; left:-8%; right:-10%; bottom:-68px; height:160px; background:#485f3e; border-radius:48% 42% 0 0; transform:rotate(-8deg); box-shadow:230px -22px 0 5px #647f44,500px 4px 0 6px #40583a; }
+    .track-preview:after { content:"🏁       🪙      ⛰️       🪙      🏁"; position:absolute; top:46%; left:12%; font-size:24px; letter-spacing:18px; white-space:nowrap; }
+    .race-scene { position:relative; min-height:380px; border-radius:18px; overflow:hidden; background:linear-gradient(#89d2da 0 50%,#d2d796 50% 63%,#64814a 63%); }
+    .race-scene:before { content:""; position:absolute; width:150%; height:150px; bottom:-62px; left:-20%; border-radius:50%; transform:rotate(-8deg); background:#455d3b; box-shadow:240px -25px 0 #657e44,520px 10px 0 #3f5737; }
+    .race-road { position:absolute; left:0; right:0; bottom:75px; height:4px; background:#293c2d; transform:rotate(-5deg); }
+    .race-car { position:absolute; left:45%; bottom:76px; font-size:67px; transform:scaleX(-1) rotate(-8deg); filter:drop-shadow(0 6px 3px #25312688); }
+    .race-status { position:absolute; inset:12px 12px auto; display:flex; justify-content:space-between; gap:8px; }
+    .race-status span { background:#1d2b20dd; border:1px solid #667855; padding:8px 12px; border-radius:12px; font-weight:800; }
+    .race-controls { position:absolute; left:16px; right:16px; bottom:15px; display:flex; justify-content:space-between; align-items:center; }
+    .control { width:76px; height:58px; border:1px solid #ffffff44; border-radius:16px; background:#213124dd; font-size:21px; font-weight:900; }
+    .control.gas { background:#d2f275; color:#1b2a1c; }
+    .editor-canvas { min-height:300px; border:1px dashed #82926a; background:linear-gradient(#90d4d7 0 58%,#78964f 58%); border-radius:16px; position:relative; overflow:hidden; }
+    .editor-canvas:before { content:""; position:absolute; height:80px; bottom:-40px; left:-8%; right:-8%; background:#475e3d; transform:rotate(-4deg); border-radius:50%; }
+    .editor-start,.editor-finish { position:absolute; top:48%; font-size:24px; z-index:2; }
+    .editor-start { left:6%; }.editor-finish { right:6%; }
+    .obstacle { position:absolute; z-index:2; top:42%; font-size:28px; transform:translateX(-50%); }
+    .editor-tools { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+    .notice { margin-top:14px; border-left:3px solid var(--orange); padding:10px 12px; color:#d8dfce; background:#332e2388; border-radius:0 10px 10px 0; font-size:13px; }
+    .result-score { font-size:62px; color:var(--lime); font-weight:1000; letter-spacing:-.06em; }
+    .reward { text-align:center; padding:20px; border-radius:16px; background:#304531; border:1px solid var(--line); }
+    .flow { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-top:16px; }
+    .flow span { background:#314530; border:1px solid #596e4a; padding:8px 11px; border-radius:10px; font-size:13px; }
+    .flow b { color:var(--lime); }
+    .footer-note { color:#8f9e89; font-size:12px; text-align:center; padding:18px 4px 0; }
+    @media (max-width:780px) {
+      .layout { grid-template-columns:1fr; }
+      aside { position:static; display:flex; overflow:auto; gap:4px; padding:8px; }
+      .nav-label { display:none; }
+      .nav-btn { width:auto; flex:0 0 auto; padding:9px 11px; }
+      .nav-btn .nav-text { display:none; }
+      .nav-icon { width:auto; }
+      main { min-height:600px; }
+      .garage { grid-template-columns:1fr; }
+      .grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+    @media (max-width:460px) {
+      .shell { padding:12px 10px 24px; }
+      .topbar { align-items:flex-start; }
+      .brand-sub { display:none; }
+      .wallet .pill { padding:7px 9px; }
+      .screen { padding:18px 14px; }
+      .grid { grid-template-columns:1fr; }
+      .hero { min-height:250px; }
+      .car-art { right:2%; bottom:47px; font-size:62px; }
+      .race-scene { min-height:340px; }
+    }
+    .shell { max-width:1100px; }
+    .layout { grid-template-columns:220px minmax(0, 430px); justify-content:center; gap:30px; }
+    main {
+      width:100%;
+      height:min(820px, calc(100vh - 112px));
+      min-height:650px;
+      position:relative;
+      overflow-y:auto;
+      overflow-x:hidden;
+      border:8px solid #0d1510;
+      border-radius:38px;
+      background:#1b2a21;
+      box-shadow:0 0 0 1px #8b9b70, 0 24px 70px #080d0a99;
+      scrollbar-width:thin;
+      scrollbar-color:#647a50 transparent;
+    }
+    main:before {
+      content:"";
+      position:sticky;
+      z-index:5;
+      display:block;
+      width:112px;
+      height:18px;
+      top:0;
+      margin:0 auto -18px;
+      border-radius:0 0 13px 13px;
+      background:#0d1510;
+      pointer-events:none;
+    }
+    .screen { padding:30px 18px 24px; }
+    .screen-head { margin-bottom:17px; }
+    .screen-head h1 { font-size:30px; }
+    .grid { grid-template-columns:1fr; gap:9px; margin-top:12px; }
+    .card { padding:14px; border-radius:17px; }
+    .card-icon { display:inline-grid; place-items:center; width:38px; height:38px; margin:0 8px 0 0; border-radius:12px; background:#40583a; vertical-align:middle; }
+    .card h2 { display:inline-block; vertical-align:middle; font-size:17px; }
+    .card p { margin-top:7px; }
+    .hero { min-height:315px; border-radius:24px; }
+    .hero:before { left:-5%; }
+    .hero:after { left:12%; }
+    .hero-title { font-size:48px; }
+    .car-art { right:5%; bottom:48px; font-size:70px; }
+    .btn { border-radius:14px; }
+    .garage { grid-template-columns:1fr; }
+    .vehicle-stage { min-height:225px; }
+    .big-car { font-size:90px; }
+    .track-preview { min-height:210px; }
+    .race-scene { min-height:390px; }
+    .race-status { flex-wrap:wrap; }
+    .race-status span { font-size:11px; padding:7px 8px; }
+    .editor-canvas { min-height:280px; }
+    .nav-btn { font-size:13px; }
+    @media (max-width:780px) {
+      .shell { max-width:480px; padding:12px 10px 24px; }
+      .topbar { margin-bottom:12px; }
+      .layout { grid-template-columns:1fr; gap:10px; }
+      aside { position:static; order:0; border-radius:15px; }
+      main { order:1; width:100%; height:calc(100svh - 155px); min-height:570px; max-height:820px; margin:auto; }
+      .footer-note { padding-top:10px; }
+    }
+    @media (max-width:460px) {
+      .shell { padding:8px 8px 18px; }
+      .brand-mark { width:36px; height:36px; }
+      .wallet .pill { font-size:11px; }
+      main { height:calc(100svh - 136px); min-height:540px; border-width:5px; border-radius:30px; }
+      .screen { padding:26px 15px 20px; }
+      .screen-head h1 { font-size:27px; }
+      .hero { min-height:285px; }
+      .hero-title { font-size:43px; }
+      .race-scene { min-height:350px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">↗</div>
+        <div><div class="brand-name">HILL RIVALS</div><div class="brand-sub">Interactive wireframe prototype</div></div>
+      </div>
+      <div class="wallet"><div class="pill">🪙 <strong id="coins">2,450</strong></div><div class="pill">🏆 <strong>1,280</strong></div><button class="btn ghost small" data-screen="settings" aria-label="Settings">⚙</button></div>
+    </header>
+    <div class="layout">
+      <aside aria-label="Prototype screens">
+        <div class="nav-label">Screens</div>
+        <button class="nav-btn" data-screen="splash"><span class="nav-icon">⛰️</span><span class="nav-text">Splash / Welcome</span></button>
+        <button class="nav-btn active" data-screen="home"><span class="nav-icon">⌂</span><span class="nav-text">Home / Garage Hub</span></button>
+        <button class="nav-btn" data-screen="modes"><span class="nav-icon">🏁</span><span class="nav-text">Mode Select</span></button>
+        <button class="nav-btn" data-screen="vehicles"><span class="nav-icon">🚙</span><span class="nav-text">Vehicle Select</span></button>
+        <button class="nav-btn" data-screen="upgrade"><span class="nav-icon">🔧</span><span class="nav-text">Vehicle Upgrade</span></button>
+        <button class="nav-btn" data-screen="customize"><span class="nav-icon">🎨</span><span class="nav-text">Vehicle Customize</span></button>
+        <button class="nav-btn" data-screen="cups"><span class="nav-icon">🗺️</span><span class="nav-text">Map / Cup Select</span></button>
+        <button class="nav-btn" data-screen="race"><span class="nav-icon">🎮</span><span class="nav-text">Race HUD</span></button>
+        <button class="nav-btn" data-screen="results"><span class="nav-icon">🏆</span><span class="nav-text">Race Results</span></button>
+        <button class="nav-btn" data-screen="events"><span class="nav-icon">⚡</span><span class="nav-text">Events / Team</span></button>
+        <button class="nav-btn" data-screen="editor"><span class="nav-icon">✏️</span><span class="nav-text">Track Editor</span></button>
+        <button class="nav-btn" data-screen="settings"><span class="nav-icon">⚙️</span><span class="nav-text">Settings & Support</span></button>
+      </aside>
+      <main>
+        <section class="screen" id="splash">
+          <div class="hero" style="min-height:440px;margin-top:8px">
+            <div class="hero-kicker">Offroad racing · Season 01</div>
+            <div><div class="hero-title">HILL<br>RIVALS</div><p style="color:#354932;font-weight:700">One more hill. One more race.</p></div>
+            <div class="car-art" style="font-size:82px;right:9%;bottom:63px" aria-hidden="true">🚙</div>
+            <button class="btn orange hero-cta" data-screen="home">TAP TO START →</button>
+          </div>
+          <div class="row between" style="margin-top:16px"><span class="pill">Single player</span><span class="pill">Online PvP</span></div>
+          <p style="text-align:center;font-size:12px;margin-top:17px">Concept screen · Original visual direction</p>
+        </section>
+
+        <section class="screen active" id="home">
+          <div class="screen-head"><div><div class="eyebrow">Your garage</div><h1>Ready to climb?</h1><p>Pick a ride, tune it up, and hit the hills.</p></div><span class="pill">LEVEL 12</span></div>
+          <div class="hero">
+            <div class="hero-kicker">Featured vehicle · Level 3</div>
+            <div class="hero-title">THE<br>HILL<br>CLIMBER</div>
+            <div class="car-art" aria-hidden="true">🚙</div>
+            <button class="btn hero-cta" data-screen="cups">START RACING →</button>
+          </div>
+          <div class="grid">
+            <article class="card"><div class="card-icon">🔧</div><h2>Upgrade ride</h2><p>Improve engine, tires, suspension, and grip.</p><button class="btn secondary small" data-screen="upgrade">OPEN GARAGE</button></article>
+            <article class="card"><div class="card-icon">🏆</div><h2>Trophy Road</h2><p>Keep climbing the ranks and claim milestones.</p><button class="btn secondary small" data-screen="events">VIEW PROGRESS</button></article>
+            <article class="card"><div class="card-icon">✏️</div><h2>Build a track</h2><p>Create a course, test it, and share it.</p><button class="btn secondary small" data-screen="editor">OPEN EDITOR</button></article>
+          </div>
+        </section>
+
+        <section class="screen" id="modes">
+          <div class="screen-head"><div><div class="eyebrow">Choose your challenge</div><h1>Game modes</h1><p>Solo drive, race online, join an event, or create a track.</p></div></div>
+          <div class="grid">
+            <article class="card"><div class="card-icon">⛰️</div><h2>Adventure</h2><p>Drive as far as you can. Collect coins across changing terrain.</p><button class="btn" data-screen="cups">CHOOSE TRACK</button></article>
+            <article class="card"><div class="card-icon">🏁</div><h2>Cups · PvP</h2><p>Race opponents, earn trophies, and move up the cup ladder.</p><button class="btn orange" data-screen="cups">RACE ONLINE</button></article>
+            <article class="card"><div class="card-icon">⚡</div><h2>Live events</h2><p>Take on limited-time challenges and earn event rewards.</p><button class="btn secondary" data-screen="events">VIEW EVENTS</button></article>
+            <article class="card"><div class="card-icon">🛠️</div><h2>Track Editor</h2><p>Build jumps and obstacles, then try your own track.</p><button class="btn secondary" data-screen="editor">CREATE TRACK</button></article>
+            <article class="card"><div class="card-icon">👥</div><h2>Team races</h2><p>Play together and contribute to team standings.</p><button class="btn secondary" data-screen="events">OPEN TEAM</button></article>
+            <article class="card"><div class="card-icon">🚙</div><h2>Choose vehicle</h2><p>Pick a vehicle that fits your route and driving style.</p><button class="btn secondary" data-screen="vehicles">MY VEHICLES</button></article>
+          </div>
+        </section>
+
+        <section class="screen" id="vehicles">
+          <div class="screen-head"><div><div class="eyebrow">Your collection</div><h1>Choose a vehicle</h1><p>Different rides bring different stats and handling.</p></div><button class="btn secondary small" data-screen="upgrade">TUNE VEHICLE</button></div>
+          <div class="garage">
+            <div class="vehicle-stage"><span class="vehicle-name" id="vehicleName">HILL CLIMBER</span><div class="big-car" id="vehicleArt">🚙</div></div>
+            <div class="card">
+              <div class="row between"><h2 id="vehicleTitle">Hill Climber</h2><span class="pill">LVL 3</span></div>
+              <div class="stat"><div class="stat-top"><span>Engine</span><b>62</b></div><div class="bar"><span style="width:62%"></span></div></div>
+              <div class="stat"><div class="stat-top"><span>Grip</span><b>74</b></div><div class="bar"><span style="width:74%"></span></div></div>
+              <div class="stat"><div class="stat-top"><span>Stability</span><b>58</b></div><div class="bar"><span style="width:58%"></span></div></div>
+              <div class="row" style="margin-top:19px"><button class="btn secondary small" id="prevVehicle">←</button><button class="btn secondary small" id="nextVehicle">NEXT VEHICLE →</button><button class="btn secondary small" data-screen="customize">CUSTOMIZE</button></div>
+              <button class="btn" style="width:100%;margin-top:10px" data-screen="cups">RACE THIS VEHICLE</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="customize">
+          <div class="screen-head"><div><div class="eyebrow">Garage · Style shop</div><h1>Make it yours</h1><p>Choose a paint finish and kit out your ride.</p></div></div>
+          <div class="vehicle-stage" id="paintStage"><span class="vehicle-name">HILL CLIMBER · CUSTOM</span><div class="big-car">🚙</div></div>
+          <div class="card" style="margin-top:12px">
+            <div class="row between"><h2>Paint finish</h2><span class="pill">FREE PREVIEW</span></div>
+            <div class="row" style="margin-top:13px">
+              <button class="paint-swatch" data-paint="#b8db59" aria-label="Lime paint" style="width:42px;height:42px;border:3px solid #ffffff;border-radius:50%;background:#b8db59;cursor:pointer"></button>
+              <button class="paint-swatch" data-paint="#e65d3d" aria-label="Orange paint" style="width:42px;height:42px;border:3px solid #ffffff55;border-radius:50%;background:#e65d3d;cursor:pointer"></button>
+              <button class="paint-swatch" data-paint="#43a8d7" aria-label="Blue paint" style="width:42px;height:42px;border:3px solid #ffffff55;border-radius:50%;background:#43a8d7;cursor:pointer"></button>
+              <button class="paint-swatch" data-paint="#d6d7ce" aria-label="White paint" style="width:42px;height:42px;border:3px solid #ffffff55;border-radius:50%;background:#d6d7ce;cursor:pointer"></button>
+            </div>
+          </div>
+          <div class="option-list" style="margin-top:10px">
+            <div class="option"><div><b>Trail decals</b><small>Desert stripe set</small></div><span class="pill">OWNED</span></div>
+            <div class="option"><div><b>Roof accessory</b><small>Cosmetic vehicle part</small></div><button class="btn secondary small">PREVIEW</button></div>
+          </div>
+          <div class="row between" style="margin-top:14px"><button class="btn ghost" data-screen="vehicles">← VEHICLES</button><button class="btn" id="savePaint">SAVE LOOK</button></div>
+        </section>
+
+        <section class="screen" id="upgrade">
+          <div class="screen-head"><div><div class="eyebrow">Garage · Hill Climber</div><h1>Upgrade vehicle</h1><p>Spend earned coins to improve your race setup.</p></div><button class="btn ghost small" data-screen="vehicles">CHANGE VEHICLE</button></div>
+          <div class="garage">
+            <div class="vehicle-stage"><span class="vehicle-name">HILL CLIMBER · LVL 3</span><div class="big-car">🚙</div></div>
+            <div class="option-list">
+              <div class="option"><div><b>Engine</b><small>Acceleration & top speed · Lv. 3</small></div><button class="btn small upgrade-btn" data-cost="300">300 🪙</button></div>
+              <div class="option"><div><b>Tires</b><small>Traction on rough terrain · Lv. 2</small></div><button class="btn small upgrade-btn" data-cost="250">250 🪙</button></div>
+              <div class="option"><div><b>Suspension</b><small>Landing control & stability · Lv. 2</small></div><button class="btn small upgrade-btn" data-cost="350">350 🪙</button></div>
+              <div class="option"><div><b>Grip tuning</b><small>Handling on slopes · Lv. 1</small></div><button class="btn small upgrade-btn" data-cost="200">200 🪙</button></div>
+              <button class="btn secondary" data-screen="cups">BACK TO RACE</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="cups">
+          <div class="screen-head"><div><div class="eyebrow">Trophy cup · Race 3 of 5</div><h1>Pick your track</h1><p>Choose a route and take on the next race.</p></div><span class="pill">🏆 1,280</span></div>
+          <div class="track-preview"></div>
+          <div class="grid" style="margin-top:0">
+            <article class="card"><div class="eyebrow">Selected route</div><h2>Green Valley</h2><p>Rolling hills · Medium difficulty · 4 racers</p></article>
+            <article class="card"><div class="eyebrow">Race rewards</div><h2>+120 🪙 · +35 🏆</h2><p>Rewards vary by placement.</p></article>
+            <article class="card"><div class="eyebrow">Your setup</div><h2>Hill Climber · Lv. 3</h2><p>Upgrade before the starting line.</p><button class="btn secondary small" data-screen="upgrade">TUNE UP</button></article>
+          </div>
+          <div class="row between" style="margin-top:16px"><button class="btn ghost" data-screen="modes">← MODES</button><button class="btn orange" data-screen="race">FIND RACE →</button></div>
+        </section>
+
+        <section class="screen" id="race">
+          <div class="screen-head"><div><div class="eyebrow">Green Valley · PvP race</div><h1>Race in progress</h1></div><button class="btn ghost small" id="pauseRace">Ⅱ PAUSE</button></div>
+          <div class="race-scene">
+            <div class="race-status"><span>POSITION <b id="position">2 / 4</b></span><span>DISTANCE <b id="distance">420 m</b></span><span>🪙 <b id="raceCoins">0</b></span></div>
+            <div class="race-road"></div><div class="race-car">🚙</div>
+            <div class="race-controls"><button class="control" id="brake">◀</button><span class="pill" id="raceMessage">Hold to drive</span><button class="control gas" id="gas">▶</button></div>
+          </div>
+          <div class="notice">Prototype interaction: press and hold gas or brake to move the race forward. Finish to see the results screen.</div>
+          <div class="row between" style="margin-top:13px"><button class="btn ghost small" data-screen="cups">EXIT RACE</button><button class="btn small" data-screen="results">FINISH RACE →</button></div>
+        </section>
+
+        <section class="screen" id="results">
+          <div class="screen-head"><div><div class="eyebrow">Race complete · Green Valley</div><h1>Great drive!</h1></div><span class="pill">NEW BEST</span></div>
+          <div class="reward"><div class="result-score">2<small style="font-size:22px;color:var(--muted)">ND</small></div><h2>Podium finish</h2><p>Clean landings and a strong finish.</p></div>
+          <div class="grid">
+            <article class="card"><div class="card-icon">🪙</div><h2>+120 Coins</h2><p>Added to your garage balance.</p></article>
+            <article class="card"><div class="card-icon">🏆</div><h2>+35 Trophies</h2><p>Trophy Road progress updated.</p></article>
+            <article class="card"><div class="card-icon">📈</div><h2>Personal best</h2><p>Your cup standing moved up.</p></article>
+          </div>
+          <div class="row between" style="margin-top:18px"><button class="btn secondary" data-screen="home">GARAGE</button><button class="btn orange" data-screen="cups">NEXT RACE →</button></div>
+        </section>
+
+        <section class="screen" id="events">
+          <div class="screen-head"><div><div class="eyebrow">Compete together</div><h1>Events & team</h1><p>Seasonal challenges and team progress.</p></div></div>
+          <div class="grid">
+            <article class="card"><div class="card-icon">⚡</div><div class="eyebrow">Weekly challenge</div><h2>Big Air Weekend</h2><p>Land 5 clean jumps in any race. Resets in 2d 14h.</p><button class="btn orange" data-screen="cups">PLAY CHALLENGE</button></article>
+            <article class="card"><div class="card-icon">👥</div><div class="eyebrow">Your team</div><h2>Hill Hustlers</h2><p>12 members · Team score 8,420 · Rank #184</p><button class="btn secondary" id="teamButton">VIEW TEAM</button></article>
+            <article class="card"><div class="card-icon">🏆</div><div class="eyebrow">Trophy Road</div><h2>1,280 / 1,500</h2><p>Next milestone: vehicle paint and coin reward.</p><div class="bar"><span style="width:85%"></span></div><button class="btn secondary small" data-screen="cups">EARN TROPHIES</button></article>
+          </div>
+          <div class="notice">Event rewards are earned through play. Optional purchases are not required to enter the core race flow.</div>
+        </section>
+
+        <section class="screen" id="editor">
+          <div class="screen-head"><div><div class="eyebrow">Create · Test · Share</div><h1>Track Editor</h1><p>Add pieces to the course, test your build, then publish it.</p></div><span class="pill" id="pieceCount">0 pieces</span></div>
+          <div class="editor-canvas" id="editorCanvas"><span class="editor-start">🚩</span><span class="editor-finish">🏁</span></div>
+          <div class="editor-tools">
+            <button class="btn secondary small add-piece" data-piece="⛰️">+ Hill</button>
+            <button class="btn secondary small add-piece" data-piece="🟠">+ Ramp</button>
+            <button class="btn secondary small add-piece" data-piece="🪨">+ Rock</button>
+            <button class="btn secondary small add-piece" data-piece="🪙">+ Coin</button>
+            <button class="btn ghost small" id="undoPiece">UNDO</button>
+          </div>
+          <div class="row between"><button class="btn ghost" data-screen="modes">← BACK</button><div class="row"><button class="btn secondary" id="publishTrack">PUBLISH</button><button class="btn orange" data-screen="race">TEST TRACK →</button></div></div>
+        </section>
+
+        <section class="screen" id="settings">
+          <div class="screen-head"><div><div class="eyebrow">Player preferences</div><h1>Settings & support</h1><p>Manage your play experience and get help.</p></div></div>
+          <div class="option-list">
+            <div class="option"><div><b>Sound & music</b><small>Control game audio</small></div><button class="btn secondary small toggle">ON</button></div>
+            <div class="option"><div><b>Control layout</b><small>Gas and brake button positions</small></div><button class="btn secondary small">EDIT</button></div>
+            <div class="option"><div><b>Purchases</b><small>Optional purchases; device settings can disable them.</small></div><span class="pill">OPTIONAL</span></div>
+            <div class="option"><div><b>Support</b><small>Help, privacy, and terms information</small></div><button class="btn secondary small">OPEN</button></div>
+          </div>
+          <div class="notice">Any random-item purchase should clearly disclose item contents and odds before confirmation.</div>
+          <button class="btn secondary" style="margin-top:16px" data-screen="home">BACK TO HOME</button>
+        </section>
+      </main>
+    </div>
+    <div class="footer-note">Concept prototype · Original UI direction · Buttons demonstrate the proposed screen flow</div>
+  </div>
+  <script>
+    (function () {
+      const screens = Array.from(document.querySelectorAll(".screen"));
+      const navButtons = Array.from(document.querySelectorAll(".nav-btn"));
+      const coinDisplay = document.getElementById("coins");
+      let coins = 2450;
+      let vehicleIndex = 0;
+      let raceDistance = 420;
+      let raceCoins = 0;
+      let driveTimer = null;
+      let pieces = [];
+      const vehicles = [
+        { name: "Hill Climber", art: "🚙" },
+        { name: "Trail Blazer", art: "🚜" },
+        { name: "Dirt Runner", art: "🏎️" }
+      ];
+
+      function showScreen(id) {
+        const target = document.getElementById(id);
+        if (!target) return;
+        screens.forEach(function (screen) { screen.classList.toggle("active", screen === target); });
+        navButtons.forEach(function (button) { button.classList.toggle("active", button.dataset.screen === id); });
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      document.addEventListener("click", function (event) {
+        const button = event.target.closest("[data-screen]");
+        if (button) showScreen(button.dataset.screen);
+      });
+
+      document.querySelectorAll(".upgrade-btn").forEach(function (button) {
+        button.addEventListener("click", function () {
+          const cost = Number(button.dataset.cost);
+          if (coins < cost) {
+            button.textContent = "NEED COINS";
+            setTimeout(function () { button.textContent = cost + " 🪙"; }, 1200);
+            return;
+          }
+          coins -= cost;
+          coinDisplay.textContent = coins.toLocaleString();
+          button.textContent = "UPGRADED ✓";
+          button.disabled = true;
+          button.classList.add("secondary");
+        });
+      });
+
+      function updateVehicle() {
+        const vehicle = vehicles[vehicleIndex];
+        document.getElementById("vehicleName").textContent = vehicle.name.toUpperCase();
+        document.getElementById("vehicleTitle").textContent = vehicle.name;
+        document.getElementById("vehicleArt").textContent = vehicle.art;
+      }
+      document.getElementById("nextVehicle").addEventListener("click", function () {
+        vehicleIndex = (vehicleIndex + 1) % vehicles.length;
+        updateVehicle();
+      });
+      document.getElementById("prevVehicle").addEventListener("click", function () {
+        vehicleIndex = (vehicleIndex + vehicles.length - 1) % vehicles.length;
+        updateVehicle();
+      });
+      document.querySelectorAll(".paint-swatch").forEach(function (swatch) {
+        swatch.addEventListener("click", function () {
+          document.querySelectorAll(".paint-swatch").forEach(function (item) { item.style.borderColor = "#ffffff55"; });
+          swatch.style.borderColor = "#ffffff";
+          document.getElementById("paintStage").style.background =
+            "linear-gradient(" + swatch.dataset.paint + " 0 48%, #b5c976 48% 65%, #68824a 65%)";
+        });
+      });
+      document.getElementById("savePaint").addEventListener("click", function () {
+        this.textContent = "LOOK SAVED ✓";
+        setTimeout(function () { document.getElementById("savePaint").textContent = "SAVE LOOK"; }, 1400);
+      });
+
+      function drive(amount) {
+        raceDistance += amount;
+        if (amount > 0) raceCoins += 1;
+        document.getElementById("distance").textContent = raceDistance + " m";
+        document.getElementById("raceCoins").textContent = raceCoins;
+        document.getElementById("position").textContent = raceDistance > 700 ? "1 / 4" : "2 / 4";
+        document.getElementById("raceMessage").textContent = amount > 0 ? "Keep climbing!" : "Careful on the slope";
+        if (raceDistance >= 1000) showScreen("results");
+      }
+      function startDrive(amount) {
+        if (driveTimer) return;
+        drive(amount);
+        driveTimer = window.setInterval(function () { drive(amount); }, 450);
+      }
+      function stopDrive() {
+        if (driveTimer) window.clearInterval(driveTimer);
+        driveTimer = null;
+        document.getElementById("raceMessage").textContent = "Hold to drive";
+      }
+      ["gas", "brake"].forEach(function (id) {
+        const control = document.getElementById(id);
+        const amount = id === "gas" ? 35 : -12;
+        control.addEventListener("pointerdown", function (event) {
+          event.preventDefault();
+          startDrive(amount);
+        });
+        ["pointerup", "pointerleave", "pointercancel"].forEach(function (name) {
+          control.addEventListener(name, stopDrive);
+        });
+      });
+      document.getElementById("pauseRace").addEventListener("click", function () {
+        stopDrive();
+        const message = document.getElementById("raceMessage");
+        message.textContent = message.textContent === "PAUSED" ? "Hold to drive" : "PAUSED";
+      });
+
+      function renderPieceCount() {
+        document.getElementById("pieceCount").textContent = pieces.length + (pieces.length === 1 ? " piece" : " pieces");
+      }
+      document.querySelectorAll(".add-piece").forEach(function (button) {
+        button.addEventListener("click", function () {
+          const piece = document.createElement("span");
+          piece.className = "obstacle";
+          piece.textContent = button.dataset.piece;
+          piece.style.left = (18 + (pieces.length % 6) * 12) + "%";
+          document.getElementById("editorCanvas").appendChild(piece);
+          pieces.push(piece);
+          renderPieceCount();
+        });
+      });
+      document.getElementById("undoPiece").addEventListener("click", function () {
+        const piece = pieces.pop();
+        if (piece) piece.remove();
+        renderPieceCount();
+      });
+      document.getElementById("publishTrack").addEventListener("click", function () {
+        const button = document.getElementById("publishTrack");
+        button.textContent = pieces.length ? "PUBLISHED ✓" : "ADD A PIECE FIRST";
+        setTimeout(function () { button.textContent = "PUBLISH"; }, 1500);
+      });
+      document.querySelectorAll(".toggle").forEach(function (button) {
+        button.addEventListener("click", function () {
+          button.textContent = button.textContent === "ON" ? "OFF" : "ON";
+        });
+      });
+      document.getElementById("teamButton").addEventListener("click", function () {
+        this.textContent = this.textContent === "VIEW TEAM" ? "TEAM MEMBERS · 12" : "VIEW TEAM";
+      });
+    }());
+  </script>
+</body>
+</html>
