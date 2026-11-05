@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#11101c">
+    <title>Game Royal — Story Prototype</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #11101c;
+        color: #fff9e9;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        --muted: #aaa6bb;
+        --accent: #ffcb55;
+        --panel: rgba(31, 29, 46, 0.82);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        min-width: 320px;
+        min-height: 100vh;
+        margin: 0;
+        overflow: hidden;
+        background:
+          radial-gradient(ellipse at 50% 40%, rgba(93, 56, 95, 0.23), transparent 50%),
+          #11101c;
+      }
+
+      button { font: inherit; }
+
+      .app {
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        width: min(100%, 1500px);
+        height: 100dvh;
+        margin: 0 auto;
+        padding: 22px 32px 18px;
+        gap: 16px;
+      }
+
+      .topbar, .story-meta, .controls, .timeline {
+        display: flex;
+        align-items: center;
+      }
+
+      .topbar {
+        justify-content: space-between;
+        gap: 20px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 42px;
+        height: 42px;
+        place-items: center;
+        border: 1px solid rgba(255, 203, 85, 0.4);
+        border-radius: 14px;
+        background: linear-gradient(145deg, #332440, #1d1b2b);
+        color: var(--accent);
+        font-size: 21px;
+        box-shadow: 0 8px 26px rgba(0, 0, 0, 0.24);
+      }
+
+      .brand-name {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 850;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .brand-subtitle {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .top-actions { display: flex; gap: 8px; }
+
+      .icon-button, .nav-button, .scene-button {
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: var(--panel);
+        color: #fff9e9;
+        cursor: pointer;
+        transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+      }
+
+      .icon-button:hover, .nav-button:hover, .scene-button:hover {
+        border-color: rgba(255, 203, 85, 0.62);
+        background: rgba(63, 53, 77, 0.92);
+      }
+
+      .icon-button:active, .nav-button:active, .scene-button:active { transform: scale(0.96); }
+
+      .icon-button {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        color: var(--muted);
+        font-size: 17px;
+      }
+
+      .stage {
+        position: relative;
+        display: grid;
+        min-height: 0;
+        place-items: center;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 28px;
+        background:
+          radial-gradient(ellipse at center, rgba(89, 58, 97, 0.23), transparent 63%),
+          rgba(19, 17, 29, 0.65);
+      }
+
+      .art-frame {
+        position: relative;
+        height: 100%;
+        max-height: 100%;
+        aspect-ratio: 810 / 1440;
+        overflow: hidden;
+        border: 1px solid rgba(255, 221, 155, 0.3);
+        border-radius: 18px;
+        background: #24202c;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.52), 0 0 55px rgba(239, 157, 75, 0.08);
+      }
+
+      .art-frame img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        user-select: none;
+        -webkit-user-drag: none;
+      }
+
+      .image-shade {
+        position: absolute;
+        inset: auto 0 0;
+        height: 22%;
+        background: linear-gradient(transparent, rgba(14, 12, 21, 0.58));
+        pointer-events: none;
+      }
+
+      .scene-counter {
+        position: absolute;
+        z-index: 1;
+        top: 14px;
+        left: 14px;
+        padding: 8px 11px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 999px;
+        background: rgba(17, 16, 28, 0.72);
+        color: #fff9e9;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        backdrop-filter: blur(12px);
+      }
+
+      .nav-button {
+        position: absolute;
+        z-index: 2;
+        top: 50%;
+        width: 50px;
+        height: 50px;
+        border-radius: 17px;
+        font-size: 22px;
+        transform: translateY(-50%);
+      }
+
+      .nav-button:active { transform: translateY(-50%) scale(0.96); }
+      .nav-button[disabled] { opacity: 0.36; cursor: default; }
+      .nav-button[disabled]:hover { border-color: rgba(255, 255, 255, 0.12); background: var(--panel); }
+      .nav-button.prev { left: 22px; }
+      .nav-button.next { right: 22px; }
+
+      .footer { display: grid; gap: 12px; }
+
+      .story-meta {
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .eyebrow {
+        margin: 0 0 5px;
+        color: var(--accent);
+        font-size: 10px;
+        font-weight: 850;
+        letter-spacing: 0.17em;
+        text-transform: uppercase;
+      }
+
+      .scene-title {
+        margin: 0;
+        font-size: clamp(17px, 2vw, 22px);
+        font-weight: 760;
+        letter-spacing: -0.02em;
+      }
+
+      .scene-description {
+        margin: 5px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .controls { gap: 9px; }
+
+      .controls .nav-button {
+        position: static;
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        transform: none;
+      }
+
+      .controls .nav-button:active { transform: scale(0.96); }
+
+      .primary-button {
+        min-width: 130px;
+        height: 44px;
+        padding: 0 18px;
+        border: 1px solid #ffe29a;
+        border-radius: 14px;
+        background: linear-gradient(180deg, #ffd978, #ffbd45);
+        color: #291a24;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.06em;
+        cursor: pointer;
+        box-shadow: 0 5px 0 #b86b36, 0 10px 24px rgba(255, 180, 62, 0.18);
+        transition: transform 160ms ease, filter 160ms ease;
+      }
+
+      .primary-button:hover { filter: brightness(1.06); }
+      .primary-button:active { transform: translateY(3px); box-shadow: 0 2px 0 #b86b36; }
+
+      .timeline {
+        gap: 8px;
+        width: 100%;
+      }
+
+      .scene-button {
+        position: relative;
+        flex: 1;
+        height: 7px;
+        min-width: 12px;
+        padding: 0;
+        overflow: hidden;
+        border: 0;
+        border-radius: 99px;
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      .scene-button[aria-current="step"] { background: var(--accent); }
+      .scene-button:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+      .toast {
+        position: fixed;
+        right: 24px;
+        bottom: 76px;
+        z-index: 5;
+        padding: 11px 15px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 14px;
+        background: #262134;
+        color: #fff9e9;
+        font-size: 13px;
+        opacity: 0;
+        transform: translateY(8px);
+        transition: opacity 180ms ease, transform 180ms ease;
+        pointer-events: none;
+      }
+
+      .toast.visible { opacity: 1; transform: translateY(0); }
+
+      @media (max-width: 700px) {
+        .app { padding: 14px 14px 12px; gap: 11px; }
+        .topbar { gap: 8px; }
+        .brand-mark { width: 38px; height: 38px; border-radius: 12px; }
+        .brand-name { font-size: 12px; }
+        .brand-subtitle { font-size: 11px; }
+        .icon-button { width: 38px; height: 38px; border-radius: 12px; }
+        .stage { border-radius: 20px; }
+        .art-frame { height: min(100%, 100%); border-radius: 14px; }
+        .nav-button { width: 42px; height: 42px; border-radius: 14px; }
+        .nav-button.prev { left: 9px; }
+        .nav-button.next { right: 9px; }
+        .scene-description { font-size: 12px; }
+        .controls { gap: 7px; }
+        .controls .nav-button { width: 38px; height: 38px; }
+        .primary-button { min-width: 112px; height: 40px; padding: 0 13px; font-size: 11px; }
+        .footer { gap: 10px; }
+      }
+
+      @media (max-width: 420px) {
+        .brand-subtitle { display: none; }
+        .story-meta { align-items: flex-end; }
+        .scene-title { max-width: 180px; }
+        .controls { gap: 6px; }
+        .controls .nav-button { width: 34px; height: 36px; }
+        .primary-button { min-width: 96px; padding: 0 10px; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">♛</div>
+          <div>
+            <p class="brand-name">Game Royal</p>
+            <p class="brand-subtitle">A royal rescue story</p>
+          </div>
+        </div>
+        <div class="top-actions">
+          <button class="icon-button" id="soundButton" type="button" aria-label="Toggle sound" title="Sound is off">♪</button>
+          <button class="icon-button" id="fullscreenButton" type="button" aria-label="Toggle fullscreen" title="Toggle fullscreen">⛶</button>
+        </div>
+      </header>
+
+      <section class="stage" aria-label="Story scene">
+        <button class="nav-button prev" id="stagePrev" type="button" aria-label="Previous scene">‹</button>
+        <figure class="art-frame">
+          <img id="sceneImage" src="1unnamed.webp" alt="Game Royal story scene 1 of 9" draggable="false">
+          <div class="image-shade" aria-hidden="true"></div>
+          <figcaption class="scene-counter" id="sceneCounter">SCENE 01 / 09</figcaption>
+        </figure>
+        <button class="nav-button next" id="stageNext" type="button" aria-label="Next scene">›</button>
+      </section>
+
+      <footer class="footer">
+        <div class="story-meta">
+          <div>
+            <p class="eyebrow" id="sceneEyebrow">The royal rescue · 01</p>
+            <h1 class="scene-title" id="sceneTitle">Save the King!</h1>
+            <p class="scene-description" id="sceneDescription">Match gems and begin the adventure.</p>
+          </div>
+          <div class="controls">
+            <button class="nav-button" id="footerPrev" type="button" aria-label="Previous scene">‹</button>
+            <button class="primary-button" id="nextButton" type="button">NEXT SCENE&nbsp; →</button>
+          </div>
+        </div>
+        <nav class="timeline" id="timeline" aria-label="Choose a story scene"></nav>
+      </footer>
+    </main>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+      const scenes = [
+        { image: "1unnamed.webp", title: "Save the King!", description: "Match gems and begin the adventure." },
+        { image: "2unnamed (9).webp", title: "A royal challenge", description: "Every puzzle brings the kingdom closer to safety." },
+        { image: "3unnamed (9).webp", title: "The path ahead", description: "Make a clever match and clear the way forward." },
+        { image: "4unnamed (9).webp", title: "Into the dungeon", description: "New obstacles stand between the king and freedom." },
+        { image: "5unnamed (9).webp", title: "A daring escape", description: "Think fast, match smart, and keep moving." },
+        { image: "6unnamed (9).webp", title: "Another puzzle", description: "A new board means a new way to help the kingdom." },
+        { image: "7unnamed (9).webp", title: "Deep below", description: "The adventure continues through mysterious chambers." },
+        { image: "8unnamed (9).webp", title: "A royal rescue", description: "One more challenge stands between danger and safety." },
+        { image: "9unnamed (9).webp", title: "Escape the shark!", description: "Match your way to safety in the final scene." },
+      ];
+
+      const image = document.getElementById("sceneImage");
+      const title = document.getElementById("sceneTitle");
+      const description = document.getElementById("sceneDescription");
+      const eyebrow = document.getElementById("sceneEyebrow");
+      const counter = document.getElementById("sceneCounter");
+      const timeline = document.getElementById("timeline");
+      const nextButton = document.getElementById("nextButton");
+      const previousButtons = [document.getElementById("stagePrev"), document.getElementById("footerPrev")];
+      let current = 0;
+      let toastTimer;
+
+      scenes.forEach((scene, index) => {
+        const button = document.createElement("button");
+        button.className = "scene-button";
+        button.type = "button";
+        button.setAttribute("aria-label", `Go to scene ${index + 1}: ${scene.title}`);
+        button.addEventListener("click", () => showScene(index));
+        timeline.append(button);
+      });
+
+      const sceneButtons = [...timeline.children];
+
+      function showScene(index) {
+        current = (index + scenes.length) % scenes.length;
+        const scene = scenes[current];
+        image.src = scene.image;
+        image.alt = `Game Royal story scene ${current + 1} of ${scenes.length}: ${scene.title}`;
+        title.textContent = scene.title;
+        description.textContent = scene.description;
+        eyebrow.textContent = `The royal rescue · ${String(current + 1).padStart(2, "0")}`;
+        counter.textContent = `SCENE ${String(current + 1).padStart(2, "0")} / ${String(scenes.length).padStart(2, "0")}`;
+        sceneButtons.forEach((button, index) => {
+          if (index === current) button.setAttribute("aria-current", "step");
+          else button.removeAttribute("aria-current");
+        });
+        previousButtons.forEach(button => button.disabled = current === 0);
+        const isLastScene = current === scenes.length - 1;
+        nextButton.textContent = isLastScene ? "RESTART STORY  ↺" : "NEXT SCENE  →";
+        document.title = `${scene.title} — Game Royal`;
+      }
+
+      function showToast(message) {
+        const toast = document.getElementById("toast");
+        toast.textContent = message;
+        toast.classList.add("visible");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove("visible"), 2000);
+      }
+
+      document.getElementById("stageNext").addEventListener("click", () => showScene(current + 1));
+      previousButtons.forEach(button => button.addEventListener("click", () => showScene(current - 1)));
+      nextButton.addEventListener("click", () => {
+        if (current === scenes.length - 1) showScene(0);
+        else showScene(current + 1);
+      });
+
+      document.getElementById("soundButton").addEventListener("click", event => {
+        event.currentTarget.title = "No audio in this prototype";
+        showToast("This prototype has no audio.");
+      });
+
+      document.getElementById("fullscreenButton").addEventListener("click", async () => {
+        try {
+          if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+          else await document.exitFullscreen();
+        } catch {
+          showToast("Fullscreen is unavailable in this browser.");
+        }
+      });
+
+      document.addEventListener("keydown", event => {
+        if (event.key === "ArrowRight" || event.key === " ") {
+          event.preventDefault();
+          showScene(current + 1);
+        } else if (event.key === "ArrowLeft") {
+          showScene(current - 1);
+        }
+      });
+
+      let touchStartX = null;
+      document.querySelector(".stage").addEventListener("touchstart", event => {
+        touchStartX = event.changedTouches[0].clientX;
+      }, { passive: true });
+      document.querySelector(".stage").addEventListener("touchend", event => {
+        if (touchStartX === null) return;
+        const delta = event.changedTouches[0].clientX - touchStartX;
+        if (Math.abs(delta) > 45) showScene(current + (delta < 0 ? 1 : -1));
+        touchStartX = null;
+      }, { passive: true });
+
+      showScene(0);
+    </script>
+  </body>
+</html>
